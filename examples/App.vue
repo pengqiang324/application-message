@@ -12,7 +12,10 @@ export default {
   name: 'App',
   components: {
     HelloWorld
-  }
+  },
+  created() {
+    console.log(this.$zl_message)
+  },
 }
 </script>
 
