@@ -51,7 +51,7 @@ const MESSAGE = ({ type, message }) => {
  * @author pengqiang
  * @date 2021/08/11 09:58
  */ 
-const MESSAGE_TYPE = ['success', 'info', 'warning', 'fail']
+const MESSAGE_TYPE = ['success', 'info', 'warning', 'loading', 'error', 'warn']
 MESSAGE_TYPE.forEach((type) => {
     MESSAGE[type] = (message) => {
         postMessage({
