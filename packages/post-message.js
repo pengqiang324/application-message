@@ -1,3 +1,15 @@
+import Vue from 'vue'
+import {
+    APP,
+    GETTOP,
+    MASK as mask,
+    PAGE as page,
+    MODAL as modal,
+    NOTIFY as notify,
+    MESSAGE as MSG,
+    LOGONOUT as logonOut,
+    SETHEIGHT
+} from './observe-types'
 /**
  * 推送消息
  * @Author pengqiang
@@ -19,10 +31,25 @@ const postMessage = ({ type, data={}, origin='*'}) => {
  * @author pengqiang
  * @date 2021/07/27 10:27
  * @params {Boolean} val 显示/隐藏遮罩层
+ * @params {String} tagName 选择器标签名
  */
-const MASK = (val) => {
+const MASK = (val, tagName='.el-dialog') => {
+    if (val) {
+        Vue.nextTick(() => {
+            postMessage({ type: GETTOP })
+            window.addEventListener(MSG, (event) => {
+            if (event.origin !== window.whiteOrigin) return
+            const dialog = document.querySelector(tagName)
+            const { scrollTop, clientHeight, offsetTop } = event.data
+            const msgOffsetTop = (clientHeight/2) - (dialog.offsetHeight/2)
+            const pageScrollTop  = scrollTop - offsetTop
+            const top = (msgOffsetTop + pageScrollTop)
+            dialog.style.cssText = `margin-top: 0;top:${ top <= 0 ? 0 : top }px`
+            }, { once: true })
+        })
+    }
     postMessage({
-        type: 'mask',
+        type: mask,
         data: {
             showMask: val
         }
@@ -38,7 +65,7 @@ const MASK = (val) => {
  */
 const MESSAGE = ({ type, message }) => {
     postMessage({
-        type: 'message',
+        type: MSG,
         data: {
             type,
             message,
@@ -55,7 +82,7 @@ const MESSAGE_TYPE = ['success', 'info', 'warning', 'loading', 'error', 'warn']
 MESSAGE_TYPE.forEach((type) => {
     MESSAGE[type] = (message) => {
         postMessage({
-            type: 'message',
+            type: MSG,
             data: {
                 type,
                 message,
@@ -72,7 +99,7 @@ MESSAGE_TYPE.forEach((type) => {
  */
  const LOGONOUT = ({ message }) => {
     postMessage({
-        type: 'logonOut',
+        type: logonOut,
         data: {
             message
         }
@@ -87,7 +114,7 @@ MESSAGE_TYPE.forEach((type) => {
  */
  const PAGE = (path) => {
     postMessage({
-        type: 'page',
+        type: page,
         data: {
             path
         }
@@ -104,7 +131,7 @@ MESSAGE_TYPE.forEach((type) => {
  */
  const CONFIRM = (content, title, { confirmButtonText, cancelButtonText }) => {
     postMessage({
-        type: 'modal',
+        type: modal,
         data: {
             title,
             content,
@@ -115,7 +142,7 @@ MESSAGE_TYPE.forEach((type) => {
     return new Promise((resolve, reject) => {
         window.resolve = resolve
         window.reject = reject
-        window.addEventListener('message', messageCallback, { once: true })
+        window.addEventListener(MSG, messageCallback, { once: true })
     })
 }
 
@@ -143,12 +170,26 @@ const messageCallback = function(event) {
  */
  const NOTIFY = ({ type, message, description }) => {
     postMessage({
-        type: 'notification',
+        type: notify,
         data: {
             type,
             message,
             description
         }
+    })
+}
+
+/**
+ * 重新计算应用高度
+ * @author pengqiang
+ * @date 2021/08/27 14:43
+ * @params {String} 应用id
+*/
+const REFRESH = (tagName=APP) => {
+    Vue.nextTick(() => {
+        const $tar = document.getElementById(tagName)
+        const $height = window.getComputedStyle($tar).getPropertyValue('height')
+        postMessage({ type: SETHEIGHT, data: { height: $height } })
     })
 }
 
@@ -158,7 +199,8 @@ export default {
     LOGONOUT, 
     PAGE, 
     CONFIRM, 
-    NOTIFY
+    NOTIFY,
+    REFRESH
 }
 
 export { postMessage } // 按需引入

@@ -3,7 +3,7 @@ const version = "1.0.0"
 
 // const METHODS = require('./post-message.js')
 import METHODS, { postMessage } from './post-message'
-
+import './mutationObserve'
 // 定义 install 方法, 接收 Vue 作为参数。
 const install = (Vue, origin="*") => {
     // 遍历注册全局组件
