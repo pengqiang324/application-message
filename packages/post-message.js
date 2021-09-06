@@ -8,15 +8,21 @@ import {
     NOTIFY as notify,
     MESSAGE as MSG,
     LOGONOUT as logonOut,
+    REPLACE as replace,
+    FORWARD as forward,
+    GO as go,
+    BACK as back,
+    PREVIEWIMAGE as previewImage,
     SETHEIGHT
 } from './observe-types'
+import { serialize } from './util'
 /**
  * 推送消息
  * @Author pengqiang
  * @Date 2021/07/12 15:34
- * @params {String} type 推送消息类型
- * @params {Object} data 推送消息数据
- * @params {String} origin 推送目标网址
+ * @param {String} type 推送消息类型
+ * @param {Object} data 推送消息数据
+ * @param {String} origin 推送目标网址
  */
 const postMessage = ({ type, data={}, origin='*'}) => {
     if (!window.parent) return
@@ -30,8 +36,8 @@ const postMessage = ({ type, data={}, origin='*'}) => {
  * 遮罩层
  * @author pengqiang
  * @date 2021/07/27 10:27
- * @params {Boolean} val 显示/隐藏遮罩层
- * @params {String} tagName 选择器标签名
+ * @param {Boolean} val 显示/隐藏遮罩层
+ * @param {String} tagName 选择器标签名
  */
 const MASK = (val, tagName='.el-dialog') => {
     if (val) {
@@ -60,8 +66,8 @@ const MASK = (val, tagName='.el-dialog') => {
  * 消息提醒
  * @author pengqiang
  * @date 2021/07/27 10:27
- * @params {String} type 消息提醒类型，存在四个值*(success, info, warning, fail)
- * @params {String} message 消息文本
+ * @param {String} type 消息提醒类型，存在四个值*(success, info, warning, fail)
+ * @param {String} message 消息文本
  */
 const MESSAGE = ({ type, message }) => {
     postMessage({
@@ -110,11 +116,28 @@ MESSAGE_TYPE.forEach((type) => {
  * 路由跳转
  * @author pengqiang
  * @date 2021/07/27 10:28
- * @params {String} path 路由地址
+ * @param {String | Object} path 路由地址或路由对象
+ * @param {Boolean} replace 公用组件是否开启单个 multitab 模式
  */
- const PAGE = (path) => {
+ const PAGE = (path, replace=false) => {
     postMessage({
         type: page,
+        data: {
+            path,
+            replace
+        }
+    })
+}
+
+/**
+ * 路由跳转替换
+ * @author pengqiang
+ * @date 2021/09/01 11:32
+ * @param {String} path 路由地址
+ */
+ const REPLACE = (path) => {
+    postMessage({
+        type: replace,
         data: {
             path
         }
@@ -122,12 +145,52 @@ MESSAGE_TYPE.forEach((type) => {
 }
 
 /**
+ * 路由前进
+ * @author pengqiang
+ * @date 2021/09/01 11:32
+ */
+ const FORWARD = () => {
+    postMessage({
+        type: forward,
+        data: {}
+    })
+}
+
+/**
+ * 路由向前或后退多少步
+ * @author pengqiang
+ * @date 2021/09/01 11:32
+ * @param {n} 向前或后退多少步
+ */
+ const GO = (n=-1) => {
+    postMessage({
+        type: go,
+        data: {
+            n
+        }
+    })
+}
+
+/**
+ * 路由后退
+ * @author pengqiang
+ * @date 2021/09/01 11:32
+ */
+ const BACk = () => {
+    postMessage({
+        type: back,
+        data: {}
+    })
+}
+
+
+/**
  * Modal 模态对话框
  * @author pengqiang
  * @date 2021/07/27 10:28
- * @params {String} title 模态标题
- * @params {Stirng} content 模态内容
- * @params {Object} options { confirmButtonText, cancelButtonText }
+ * @param {String} title 模态标题
+ * @param {Stirng} content 模态内容
+ * @param {Object} options { confirmButtonText, cancelButtonText }
  */
  const CONFIRM = (content, title, { confirmButtonText, cancelButtonText }) => {
     postMessage({
@@ -164,17 +227,58 @@ const messageCallback = function(event) {
  * Notification 通知
  * @author pengqiang
  * @date 2021/07/27 10:36
- * @params {String} type 通知图标类型,存在四个值*(success, info, fail, warning)
- * @params {String} message 通知标题
- * @params {Stirng} description 通知描述
+ * @param {String} type 通知图标类型,存在四个值*(success, info, fail, warning)
+ * @param {String} title 通知标题
+ * @param {Stirng} message 通知描述
+ * @param {String} position 通知展示位置
  */
- const NOTIFY = ({ type, message, description }) => {
+ const NOTIFY = ({ type, title, message, position='topRight' }) => {
     postMessage({
         type: notify,
         data: {
             type,
-            message,
-            description
+            message: title,
+            description: message,
+            placement: serialize(position) // 驼峰命名序列化
+        }
+    })
+}
+
+/**
+ * 不同状态 用来显示「成功、警告、消息、错误」类的 Notification 通知反馈。
+ * @author pengqiang
+ * @date 2021/09/03 10:21
+ * @param {String} type 通知图标类型,存在四个值*(success, info, fail, warning)
+ * @param {String} title 通知标题
+ * @param {Stirng} message 通知描述
+ * @param {String} position 通知展示位置
+ */ 
+ const NOTIFY_TYPE = ['success', 'info', 'warning', 'error']
+ NOTIFY_TYPE.forEach((type) => {
+    NOTIFY[type] = ({ title, message, position='topRight' } ) => {
+        postMessage({
+            type: notify,
+            data: {
+                type,
+                message: title,
+                description: message,
+                placement: serialize(position) // 驼峰命名序列化
+            }
+        })
+    }
+})
+
+/**
+ * 图片预览
+ * @author pengqiang
+ * @date 2021/09/03 15:29
+ * @param {String} image 预览图片地址
+ */
+ const PREVIEW = (image) => {
+    postMessage({
+        type: previewImage,
+        data: {
+            image
         }
     })
 }
@@ -183,7 +287,7 @@ const messageCallback = function(event) {
  * 重新计算应用高度
  * @author pengqiang
  * @date 2021/08/27 14:43
- * @params {String} 应用id
+ * @param {String} 应用id
 */
 const REFRESH = (tagName=APP) => {
     Vue.nextTick(() => {
@@ -200,7 +304,12 @@ export default {
     PAGE, 
     CONFIRM, 
     NOTIFY,
-    REFRESH
+    REFRESH,
+    REPLACE,
+    GO,
+    BACk,
+    FORWARD,
+    PREVIEW
 }
 
 export { postMessage } // 按需引入
