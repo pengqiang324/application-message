@@ -49,7 +49,7 @@ const MASK = (val, tagName='.el-dialog__wrapper') => {
             const { scrollTop, clientHeight, offsetTop } = event.data
             const msgOffsetTop = (clientHeight/2) - (dialog.offsetHeight/2)
             const pageScrollTop  = scrollTop - offsetTop
-            const top = (msgOffsetTop + pageScrollTop)
+            const top = (msgOffsetTop + pageScrollTop) - 100
             dialog.style.cssText = `margin-top: 0;top:${ top <= 0 ? 0 : top }px`
             }, { once: true })
         })
