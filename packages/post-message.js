@@ -39,13 +39,13 @@ const postMessage = ({ type, data={}, origin='*'}) => {
  * @param {Boolean} val 显示/隐藏遮罩层
  * @param {String} tagName 选择器标签名
  */
-const MASK = (val, tagName='.el-dialog') => {
+const MASK = (val, tagName='.el-dialog__wrapper') => {
     if (val) {
         Vue.nextTick(() => {
             postMessage({ type: GETTOP })
             window.addEventListener(MSG, (event) => {
             if (event.origin !== window.whiteOrigin) return
-            const dialog = document.querySelector(tagName)
+            const dialog = document.querySelector(tagName).firstChild
             const { scrollTop, clientHeight, offsetTop } = event.data
             const msgOffsetTop = (clientHeight/2) - (dialog.offsetHeight/2)
             const pageScrollTop  = scrollTop - offsetTop
