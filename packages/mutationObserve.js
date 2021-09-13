@@ -14,5 +14,7 @@ window.onload = function() {
         childList: true, // 子元素的变动
         characterData: true, // 节点内容或节点文本的变动
         subtree: true, // 是否将观察器应用于该节点的所有后代节点
+        attribute: true,
+        attributeOldValue: true
     })
 }
