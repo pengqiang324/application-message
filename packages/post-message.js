@@ -44,13 +44,17 @@ const MASK = (val, tagName='.el-dialog__wrapper') => {
         Vue.nextTick(() => {
             postMessage({ type: GETTOP })
             window.addEventListener(MSG, (event) => {
-            if (event.origin !== window.whiteOrigin) return
-            const dialog = document.querySelector(tagName).firstChild
-            const { scrollTop, clientHeight, offsetTop } = event.data
-            const msgOffsetTop = (clientHeight/2) - (dialog.offsetHeight/2)
-            const pageScrollTop  = scrollTop - offsetTop
-            const top = (msgOffsetTop + pageScrollTop) - 100
-            dialog.style.cssText = `margin-top: 0;top:${ top <= 0 ? 0 : top }px`
+                if (event.origin !== window.whiteOrigin) return
+                const { scrollTop, clientHeight, offsetTop } = event.data
+                const dialogWrapper = document.querySelector(tagName)
+                const dialogBody = dialogWrapper.querySelector('.el-dialog__body')
+                const bodyHeight = document.body.clientHeight
+                dialogBody.style.cssText = `max-height: ${ bodyHeight > (clientHeight-100) ? clientHeight - 300 : bodyHeight - 124 }px`
+                const dialog = dialogWrapper.firstChild
+                const msgOffsetTop = (clientHeight/2) - (dialog.offsetHeight/2)
+                const pageScrollTop  = scrollTop - offsetTop
+                const top = (msgOffsetTop + pageScrollTop) - 60
+                dialog.style.cssText = `margin-top: 0;top:${ top <= 0 ? 0 : top }px;margin-bottom:0;`
             }, { once: true })
         })
     }
